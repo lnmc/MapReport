@@ -3,7 +3,6 @@ import type { PublicConfig } from '../shared/config';
 
 export interface PublicEnvironment {
   MAP_PMTILES_URL?: string;
-  MAP_TERRAIN_PMTILES_URL?: string;
 }
 
 const SOURCE_BOUNDS: PublicConfig['mapBounds'] = [
@@ -24,10 +23,6 @@ export function createPublicConfig(env: PublicEnvironment = {}): PublicConfig {
     env.MAP_PMTILES_URL,
     referenceStyle.sources.protomaps.url,
   );
-  mapStyle.sources['ride-terrain-production'].url = pmtilesUrl(
-    env.MAP_TERRAIN_PMTILES_URL,
-    referenceStyle.sources['ride-terrain-production'].url,
-  );
 
   return {
     mapStyle,
@@ -38,6 +33,6 @@ export function createPublicConfig(env: PublicEnvironment = {}): PublicConfig {
     mapBounds: SOURCE_BOUNDS,
     allowedReportBounds: [15.7, 45.6, 16.3, 46.05],
     supportedTimeWindowsMinutes: [30, 60, 180, 720],
-    attribution: '© OpenStreetMap contributors · © Protomaps · © Natural Earth · © OSMCoastline · © Mapterhorn',
+    attribution: '© OpenStreetMap contributors · © Protomaps · © Natural Earth · © OSMCoastline',
   };
 }

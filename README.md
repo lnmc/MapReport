@@ -2,7 +2,7 @@
 
 ## Current implementation: Slice 1
 
-The deployable map shell is implemented. It shows Zagreb with the 44-layer Ride basemap and its existing R2 PMTiles vector and terrain sources. Report submission and storage begin in later slices.
+The deployable map shell is implemented. It shows Zagreb with the Ride-derived 43-layer vector basemap and its existing R2 PMTiles source. Terrain is disabled. Report submission and storage begin in later slices.
 
 ```sh
 npm ci
@@ -24,7 +24,7 @@ The current source layout is small by design:
 | `tests/` | Slice 1 API and map configuration tests |
 | `plans/` | Roadmap and source MapLibre reference |
 
-The browser fetches `/config` from the same origin, and MapLibre fetches PMTiles from R2 directly. The Worker does not proxy map tiles. `GET /health` and `GET /config` are the only API routes in this slice. Public archive URLs can be overridden with `MAP_PMTILES_URL` and `MAP_TERRAIN_PMTILES_URL` in the Worker environment. No Neon or Hyperdrive configuration is needed yet.
+The browser fetches `/config` from the same origin, and MapLibre fetches PMTiles from R2 directly. The Worker does not proxy map tiles. `GET /health` and `GET /config` are the only API routes in this slice. The public vector archive URL can be overridden with `MAP_PMTILES_URL` in the Worker environment. No Neon or Hyperdrive configuration is needed yet.
 
 ---
 

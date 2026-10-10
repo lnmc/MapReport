@@ -6,7 +6,7 @@ This guide deploys **Slice 1**, the map shell. It serves the React app and the H
 
 - Node.js 22 or newer and npm.
 - A Cloudflare account with Workers enabled and permission to deploy Workers. Run `npx wrangler login` on your own machine, or configure a suitable Cloudflare API token in CI.
-- Access to the existing `ridemaps.neoncore.dev` R2 public bucket settings, or an equivalent public R2 bucket with the same vector and terrain archives.
+- Access to the existing `ridemaps.neoncore.dev` R2 public bucket settings, or an equivalent public R2 bucket with the same vector archive.
 - If using a custom application domain, that domain must be on Cloudflare. The default `*.workers.dev` URL is sufficient for the first deploy.
 
 From a clean checkout:
@@ -22,20 +22,17 @@ npx wrangler deploy --dry-run
 
 ## 2. Verify the map archives before deploying
 
-The default style is a copy of the expanded Ride style in [`plans/MapLibre-Ride-reference.md`](plans/MapLibre-Ride-reference.md). It has 44 ordered layers and references these immutable R2 objects:
+The default style is derived from the expanded Ride style in [`plans/MapLibre-Ride-reference.md`](plans/MapLibre-Ride-reference.md). Its terrain source and layer are removed; the remaining 43 layers preserve their original order and expressions. It references this immutable R2 object:
 
 | Source | Public object URL |
 | --- | --- |
 | Protomaps vector | `https://ridemaps.neoncore.dev/maps/regions/central-southeast-europe/20260811-v1/vector-z0-15.pmtiles` |
-| Terrain raster | `https://ridemaps.neoncore.dev/maps/terrain/central-southeast-europe/20260811-v1/terrain-q80-z4-13.pmtiles` |
 
-PMTiles needs HTTP byte range access. Check **both** URLs with a small GET range request, and stop after the first 16 KiB:
+PMTiles needs HTTP byte range access. Check the vector URL with a small GET range request, and stop after the first 16 KiB:
 
 ```sh
 curl -sS -D - -o /dev/null --max-filesize 16384 --range 0-16383 \
   'https://ridemaps.neoncore.dev/maps/regions/central-southeast-europe/20260811-v1/vector-z0-15.pmtiles'
-curl -sS -D - -o /dev/null --max-filesize 16384 --range 0-16383 \
-  'https://ridemaps.neoncore.dev/maps/terrain/central-southeast-europe/20260811-v1/terrain-q80-z4-13.pmtiles'
 ```
 
 Look for **`206 Partial Content`**, `Content-Range: bytes 0-16383/...`, and `Accept-Ranges: bytes`. If the server returns `200 OK` with the whole archive, stop the request and fix the R2/custom-domain range behavior before launching the map. The Ride reference records a prior `200` response to range requests, so this is a real deployment gate, not a theoretical check. Recheck from a browser and from the deployment network.
@@ -56,7 +53,7 @@ For cross-origin browser access, set the bucket CORS policy in **R2 → bucket �
 
 Check a range request with `Origin: https://YOUR-APP-ORIGIN` and verify `Access-Control-Allow-Origin` and exposed headers. If you use a custom domain and have cached older responses, purge them after changing CORS. The public map hostname should have a Cloudflare Cache Rule for `/maps/` if you want edge caching of these large, immutable archives. Do not replace an archive at an existing key: publish a new key and update the URL, because PMTiles readers cache headers by URL.
 
-If you host copies of the archives, configure their public HTTPS URLs as `MAP_PMTILES_URL` and `MAP_TERRAIN_PMTILES_URL` in the Worker's non-secret environment variables. Use ordinary `https://` URLs; the backend adds `pmtiles://` in the returned style. Both must remain within the style's source bounds. The default glyph URL is external to R2: `https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf`.
+If you host a copy of the vector archive, configure its public HTTPS URL as `MAP_PMTILES_URL` in the Worker's non-secret environment variables. Use an ordinary `https://` URL; the backend adds `pmtiles://` in the returned style. The default glyph URL is external to R2: `https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf`.
 
 ## 3. Local development
 
@@ -71,7 +68,6 @@ Optional local archive overrides can go in an untracked `.dev.vars` file:
 
 ```text
 MAP_PMTILES_URL=https://example.com/vector.pmtiles
-MAP_TERRAIN_PMTILES_URL=https://example.com/terrain.pmtiles
 ```
 
 Check API responses:
@@ -104,7 +100,7 @@ curl -i 'https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev/health'
 curl -i 'https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev/config'
 ```
 
-Open the root URL in a browser. Confirm the map is centered on Zagreb, roads and labels render, terrain loads, zoom and pan work, and attribution stays visible. In browser developer tools, inspect network requests for the two `.pmtiles` files: they should be range requests returning `206`, with no CORS errors. `GET /config` should return the archive URLs you intended. A `200` for `/health` alone does not prove the map works.
+Open the root URL in a browser. Confirm the map is centered on Zagreb, roads and labels render, zoom and pan work, and attribution stays visible. In browser developer tools, inspect network requests for the vector `.pmtiles` file: they should be range requests returning `206`, with no CORS errors. No terrain archive should be requested. `GET /config` should return the vector archive URL you intended. A `200` for `/health` alone does not prove the map works.
 
 ## 5. Prepare Neon and Hyperdrive for Slice 2
 
@@ -127,7 +123,7 @@ Browser → public R2 hostname → PMTiles range requests
 Slice 2 only: Worker → Hyperdrive → Neon PostgreSQL
 ```
 
-For a failed deployment, first inspect the Worker logs with `npx wrangler tail`. For a blank map, inspect `/config`, browser console, the two PMTiles range responses, CORS headers, and the external glyph requests in that order. Archive access and CORS are managed at the R2 edge; changing the Hono API cannot repair them.
+For a failed deployment, first inspect the Worker logs with `npx wrangler tail`. For a blank map, inspect `/config`, browser console, the vector PMTiles range responses, CORS headers, and the external glyph requests in that order. Archive access and CORS are managed at the R2 edge; changing the Hono API cannot repair them.
 
 ## References
 

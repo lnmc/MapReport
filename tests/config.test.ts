@@ -14,9 +14,11 @@ describe('map and API configuration', () => {
     const config = await response.json();
     expect(config.defaultCenter).toEqual([15.9819, 45.815]);
     expect(config.supportedTimeWindowsMinutes).toEqual([30, 60, 180, 720]);
-    expect(config.mapStyle.layers).toHaveLength(44);
+    expect(config.mapStyle.layers).toHaveLength(43);
     expect(config.mapStyle.sources.protomaps.url).toContain('vector-z0-15.pmtiles');
-    expect(config.mapStyle.sources['ride-terrain-production'].url).toContain('terrain-q80-z4-13.pmtiles');
+    expect(config.mapStyle.sources).not.toHaveProperty('ride-terrain-production');
+    expect(config.mapStyle.layers).not.toContainEqual(expect.objectContaining({ id: 'terrain-production' }));
+    expect(config.attribution).not.toContain('Mapterhorn');
     expect(JSON.stringify(config)).not.toContain('password');
   });
 

@@ -2,8 +2,9 @@
   "version": 8,
   "name": "Ride editorial topographic light",
   "metadata": {
-    "ride:revision": "ride-editorial-light-1.16.2-central-southeast-europe-z4-q80",
-    "ride:label-language": "source-local"
+    "ride:label-language": "source-local",
+    "mapreport:based-on-ride-revision": "ride-editorial-light-1.16.2-central-southeast-europe-z4-q80",
+    "mapreport:terrain": "disabled"
   },
   "glyphs": "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf",
   "sources": {
@@ -19,20 +20,6 @@
       "minzoom": 0,
       "maxzoom": 15,
       "attribution": "Protomaps, OpenStreetMap, Natural Earth, OSMCoastline"
-    },
-    "ride-terrain-production": {
-      "type": "raster",
-      "url": "pmtiles://https://ridemaps.neoncore.dev/maps/terrain/central-southeast-europe/20260811-v1/terrain-q80-z4-13.pmtiles",
-      "bounds": [
-        5.712890625,
-        39.43619299931409,
-        23.115234375,
-        51.508742458803326
-      ],
-      "minzoom": 4,
-      "maxzoom": 13,
-      "tileSize": 512,
-      "attribution": "Elevation © Mapterhorn · Ride rule-guided terrain · WebP q80"
     }
   },
   "layers": [
@@ -479,18 +466,6 @@
           14,
           0.58
         ]
-      }
-    },
-    {
-      "id": "terrain-production",
-      "type": "raster",
-      "source": "ride-terrain-production",
-      "minzoom": 4,
-      "maxzoom": 14,
-      "paint": {
-        "raster-opacity": 1,
-        "raster-resampling": "linear",
-        "raster-fade-duration": 0
       }
     },
     {
